@@ -1,0 +1,16 @@
+# packaging
+pip>=25.0.1
+setuptools>=65.5.0
+
+
+# data science
+torch
+torchvision
+timm
+
+
+# tests/linter
+pytest
+
+
+# utilities
