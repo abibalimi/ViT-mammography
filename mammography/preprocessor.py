@@ -64,10 +64,25 @@ def split_train_val_test(train_DirNames, val_DirNames, test_DirNames):
     # uid = '.'.join([uid, 'dcm', 'png'])
     # uid
     
-
-
-
-
+     # Opening JSON file
+    with open(ROOT_JSON) as infile:
+        data = json.load(infile)
+        
+        # a dictlistionary to be converted to JSON 
+        dico = {}
+        
+        for key in data:
+            accessionNumber = data[key]['accessionNumber'] # Patient's directory name
+            view = data[key]['view'] # Class
+            uid = data[key]['uid'] # image file name
+            
+            # split uid and get the last string as image name
+            uid = uid.split(sep=".")[-1]
+            uid = '.'.join([uid,'dcm','png'])
+            
+            
+            
+            
 if __name__ == "__main__":
     train, val, test = split_directory_names()
     print(f'len(train) = {len(val)}')
