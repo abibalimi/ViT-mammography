@@ -8,22 +8,13 @@ from torchvision.io import read_image
 from PIL import Image
 
 
-def uploadImages(images_dir = "", out_dir = "", source_json = ""):
-    # get images 
-    
-    
-    # for each image, 
-    #   get last splitted uid string 
-    #   join dcm and png
-    pass
-
-
 # Creating Train / Test folders (One time use)
 ROOT_DIR = 'raw_data/vtb-balanced-patients-202107091800'
 ROOT_JSON = 'raw_data/vtb.balanced-patients.202107091800.json',
 OUT_DIR = 'raw_data/data'
-IMAGE_ANNOTATIONS = '/raw_data/annotaions.json'
+IMAGE_ANNOTATIONS = '/raw_data/annotaions.csv'
 TRAIN_SIZE = 0.7
+
 
 def split_directory_names():
     """
@@ -55,16 +46,10 @@ def split_train_val_test(train_DirNames, val_DirNames, test_DirNames):
     """
         Copies the (original high-resolution) images to respective train, validation and test folders, 
         images from the same patient remain in the same group (i.e in train, validatoin or test folder)
-        #and generates json file indicating the groups each image sample belongs to
         and generates a CVS file containing each image and its class ("CC" or "MLO")
     """
-    
-    # uid = "2.16.250.828871699.0.8.66439853151992126525607928262870674476065"
-    # uid = uid.split(sep=".")[-1]
-    # uid = '.'.join([uid, 'dcm', 'png'])
-    # uid
-    
-     # Opening JSON file
+
+    # Opening JSON file
     with open(ROOT_JSON) as infile:
         data = json.load(infile)
         
@@ -77,8 +62,8 @@ def split_train_val_test(train_DirNames, val_DirNames, test_DirNames):
             uid = data[key]['uid'] # image file name
             
             # split uid and get the last string as image name
-            uid = uid.split(sep=".")[-1]
-            uid = '.'.join([uid,'dcm','png'])
+            #uid = uid.split(sep=".")[-1]
+            #uid = '.'.join([uid,'dcm','png'])
             
             
             
