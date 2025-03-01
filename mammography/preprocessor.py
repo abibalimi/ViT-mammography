@@ -70,14 +70,21 @@ def split_train_val_test(train_DirNames, val_DirNames, test_DirNames):
             
             # copy train_DirNames images to train group
             if accessionNumber in train_DirNames:
-                shutil.copy(f'{ROOT_DIR}/{accessionNumber}/{long_image_file}.dcm.png', 
-                                        f'{OUT_DIR}/train/{image_file}')
+                # shutil.copy(f'{ROOT_DIR}/{accessionNumber}/{long_image_file}.dcm.png', 
+                #                         f'{OUT_DIR}/train/{image_file}')
+                copy_image_to_folder(accessionNumber, long_image_file, 'train', image_file)
         
           
         # generate annotations in .csv file
         dict_to_csv(dico=dico, headers=['image', 'label'], file_name=IMAGE_ANNOTATIONS)
         
-           
+
+def copy_image_to_folder(accessionNumber, long_image_file, split_dir, image_file):
+    long_image_file = '.'.join([long_image_file, 'dcm', 'png'])
+    shutil.copy(os.path.join(ROOT_DIR,accessionNumber,long_image_file), 
+                                        os.path.join(OUT_DIR,split_dir,image_file))
+         
+         
 if __name__ == "__main__":
     train, val, test = split_directory_names()
     print(f'len(train) = {len(val)}')
