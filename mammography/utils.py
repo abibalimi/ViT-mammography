@@ -3,9 +3,9 @@
 import csv
 
 
-def dict_to_csv(dico, headers):
-    
-    with open('raw_data/Names.csv', 'w') as csvfile:
+def dict_to_csv(dico, headers, file_name='raw_data/annotations.csv'):
+    print(file_name)
+    with open(file_name, 'w') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=headers)
         writer.writeheader()
         writer.writerows(dico)

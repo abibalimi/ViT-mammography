@@ -6,13 +6,13 @@ import shutil
 import numpy as np
 from torchvision.io import read_image
 from PIL import Image
-
+from utils import dict_to_csv
 
 # Creating Train / Test folders (One time use)
 ROOT_DIR = 'raw_data/vtb-balanced-patients-202107091800'
-ROOT_JSON = 'raw_data/vtb.balanced-patients.202107091800.json',
+ROOT_JSON = 'raw_data/vtb.balanced-patients.202107091800.json'
 OUT_DIR = 'raw_data/data'
-IMAGE_ANNOTATIONS = '/raw_data/annotaions.csv'
+IMAGE_ANNOTATIONS = 'raw_data/image_annotations.csv'
 TRAIN_SIZE = 0.7
 
 
@@ -22,11 +22,6 @@ def split_directory_names():
         since the images from the same patient shall remain within the same group (train, validation or test),
         shuffle the names of the directories, split them (70-15-15), and return them.
     """
-    # Make train, vali and test directories
-    #for dirname in ['train', 'validation', 'test']:
-    #    os.makedirs('/'.join([OUT_DIR, dirname]), exist_ok=True)
-    
-    
     # Get every patient's directory
     allPatientDirNames = [f for f in os.listdir(ROOT_DIR) if f.startswith('vtb')] # helps avoid hidden files and directories
     
@@ -40,40 +35,46 @@ def split_directory_names():
     
     return train_DirNames, val_DirNames, test_DirNames
     
-    
+
     
 def split_train_val_test(train_DirNames, val_DirNames, test_DirNames):
     """
-        Copies the (original high-resolution) images to respective train, validation and test folders, 
-        images from the same patient remain in the same group (i.e in train, validatoin or test folder)
-        and generates a CVS file containing each image and its class ("CC" or "MLO")
+        Copies the (original high-resolution) images to respective train, validation and test folders
+        while images from the same patient remain in the same group (i.e in train, validatoin or test folder)
+        and generates a CVS file containing annotations: images and labels ("CC" or "MLO")
     """
     
     # Make train, vali and test directories
     for dirname in ['train', 'validation', 'test']:
-        os.makedirs('/'.join([OUT_DIR, dirname]), exist_ok=True)
+        os.makedirs(os.path.join(OUT_DIR, dirname), exist_ok=True)
     
 
     # Opening JSON file
     with open(ROOT_JSON) as infile:
         data = json.load(infile)
         
-        # a dictlistionary to be converted to JSON 
-        dico = {}
+        # a list of dictionaries to be converted to CSV to contain annotations
+        dico = []
         
         for key in data:
             accessionNumber = data[key]['accessionNumber'] # Patient's directory name
-            view = data[key]['view'] # Class
-            uid = data[key]['uid'] # image file name
+            label = data[key]['view'] # Future image label
+            long_image_file = data[key]['uid'] # Future image file name
             
-            # split uid and get the last string as image name
-            #uid = uid.split(sep=".")[-1]
-            #uid = '.'.join([uid,'dcm','png'])
+            # split uid and get the last string as image file name
+            image_file = long_image_file.split(sep='.')[-1]
+            image_file = '.'.join([image_file,'dcm','png'])
             
+            # append annotations to list
+            dico.append({'image' : image_file, 'label' : label})
             
-            
-            
+        # generate annotations in .csv file
+        dict_to_csv(dico=dico, headers=['image', 'label'], file_name=IMAGE_ANNOTATIONS)
+        
+           
 if __name__ == "__main__":
     train, val, test = split_directory_names()
     print(f'len(train) = {len(val)}')
+    
+    split_train_val_test(train, val, test)
         
