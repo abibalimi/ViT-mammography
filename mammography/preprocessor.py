@@ -12,7 +12,7 @@ from utils import dict_to_csv
 ROOT_DIR = 'raw_data/vtb-balanced-patients-202107091800'
 ROOT_JSON = 'raw_data/vtb.balanced-patients.202107091800.json'
 OUT_DIR = 'raw_data/data'
-IMAGE_ANNOTATIONS = 'raw_data/image_annotations.csv'
+IMAGE_ANNOTATIONS_TRAIN = 'raw_data/train_image_annotations.csv'
 TRAIN_SIZE = 0.7
 
 
@@ -53,8 +53,10 @@ def split_train_val_test(train_DirNames, val_DirNames, test_DirNames):
     with open(ROOT_JSON) as infile:
         data = json.load(infile)
         
-        # a list of dictionaries to be converted to CSV to contain annotations
-        dico = []
+        # list of dictionaries to be converted to CSV to contain annotations
+        train_dico = []
+        val_dico = []
+        test_dico = []
         
         for key in data:
             accessionNumber = data[key]['accessionNumber'] # Patient's directory name
@@ -66,17 +68,18 @@ def split_train_val_test(train_DirNames, val_DirNames, test_DirNames):
             image_file = '.'.join([image_file,'dcm','png'])
             
             # append annotations to list
-            dico.append({'image' : image_file, 'label' : label})
+            #dico.append({'image' : image_file, 'label' : label})
             
             # copy train_DirNames images to train group
             if accessionNumber in train_DirNames:
-                # shutil.copy(f'{ROOT_DIR}/{accessionNumber}/{long_image_file}.dcm.png', 
-                #                         f'{OUT_DIR}/train/{image_file}')
+                # append annotations to train list
+                train_dico.append({'image' : image_file, 'label' : label})
                 copy_image_to_folder(accessionNumber, long_image_file, 'train', image_file)
         
           
-        # generate annotations in .csv file
-        dict_to_csv(dico=dico, headers=['image', 'label'], file_name=IMAGE_ANNOTATIONS)
+        # generate annotations in .csv files
+        # train
+        dict_to_csv(dico=train_dico, headers=['image', 'label'], file_name=IMAGE_ANNOTATIONS_TRAIN)
         
 
 def copy_image_to_folder(accessionNumber, long_image_file, split_dir, image_file):
