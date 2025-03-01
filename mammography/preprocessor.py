@@ -68,6 +68,12 @@ def split_train_val_test(train_DirNames, val_DirNames, test_DirNames):
             # append annotations to list
             dico.append({'image' : image_file, 'label' : label})
             
+            # copy train_DirNames images to train group
+            if accessionNumber in train_DirNames:
+                shutil.copy(f'{ROOT_DIR}/{accessionNumber}/{long_image_file}.dcm.png', 
+                                        f'{OUT_DIR}/train/{image_file}')
+        
+          
         # generate annotations in .csv file
         dict_to_csv(dico=dico, headers=['image', 'label'], file_name=IMAGE_ANNOTATIONS)
         
