@@ -23,8 +23,8 @@ def split_directory_names():
         shuffle the names of the directories, split them (70-15-15), and return them.
     """
     # Make train, vali and test directories
-    for dirname in ['train', 'validation', 'test']:
-        os.makedirs('/'.join([OUT_DIR, dirname]), exist_ok=True)
+    #for dirname in ['train', 'validation', 'test']:
+    #    os.makedirs('/'.join([OUT_DIR, dirname]), exist_ok=True)
     
     
     # Get every patient's directory
@@ -48,6 +48,11 @@ def split_train_val_test(train_DirNames, val_DirNames, test_DirNames):
         images from the same patient remain in the same group (i.e in train, validatoin or test folder)
         and generates a CVS file containing each image and its class ("CC" or "MLO")
     """
+    
+    # Make train, vali and test directories
+    for dirname in ['train', 'validation', 'test']:
+        os.makedirs('/'.join([OUT_DIR, dirname]), exist_ok=True)
+    
 
     # Opening JSON file
     with open(ROOT_JSON) as infile:
