@@ -14,6 +14,7 @@ ROOT_JSON = 'raw_data/vtb.balanced-patients.202107091800.json'
 OUT_DIR = 'raw_data/data'
 IMAGE_ANNOTATIONS_TRAIN = 'raw_data/train_image_annotations.csv'
 IMAGE_ANNOTATIONS_VAL = 'raw_data/val_image_annotations.csv'
+IMAGE_ANNOTATIONS_TEST = 'raw_data/test_image_annotations.csv'
 TRAIN_SIZE = 0.7
 
 
@@ -77,16 +78,19 @@ def split_train_val_test(train_DirNames, val_DirNames, test_DirNames):
             
             # copy val_DirNames images to validation folder
             if accessionNumber in val_DirNames:
-                # append annotations to validation list
                 val_dico.append({'image' : image_file, 'label' : label})
                 copy_image_to_folder(accessionNumber, long_image_file, 'validation', image_file)
                 
-            
+            # copy val_DirNames images to validation folder
+            if accessionNumber in test_DirNames:
+                test_dico.append({'image' : image_file, 'label' : label})
+                copy_image_to_folder(accessionNumber, long_image_file, 'test', image_file)
+                
         # generate annotations in .csv files
-        # train
-        dict_to_csv(dico=train_dico, headers=['image', 'label'], file_name=IMAGE_ANNOTATIONS_TRAIN)
-        # validation 
-        dict_to_csv(dico=val_dico, headers=['image', 'label'], file_name=IMAGE_ANNOTATIONS_VAL)
+        dict_to_csv(dico=train_dico, headers=['image', 'label'], file_name=IMAGE_ANNOTATIONS_TRAIN) # train 
+        dict_to_csv(dico=val_dico, headers=['image', 'label'], file_name=IMAGE_ANNOTATIONS_VAL) # validation 
+        dict_to_csv(dico=test_dico, headers=['image', 'label'], file_name=IMAGE_ANNOTATIONS_TEST) # test
+
 
 def copy_image_to_folder(accessionNumber, long_image_file, split_dir, image_file):
     long_image_file = '.'.join([long_image_file, 'dcm', 'png'])
