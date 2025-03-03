@@ -41,6 +41,14 @@ def split_train_val_test():
     # Prepare lists to contain annotations
     train_dico, val_dico, test_dico = [], [], []
     
+    # Mapping dataset names to their corresponding sets and annotation lists
+    dataset_map = {
+        "train": (train_dirs, train_dico),
+        "validation": (val_dirs, val_dico),
+        "test": (test_dirs, test_dico),
+    }
+    
+    # Determine dataset split and copy images
     for key, details in data.items():
         accession_number = details['accessionNumber'] # Patient's directory name
         label = details['view'] 
@@ -49,19 +57,7 @@ def split_train_val_test():
         # Extract the final part of the UID as the image file name
         image_file = f"{image_uid.split(sep='.')[-1]}.dcm.png"
         
-        
-        # copy train_DirNames images to train folder
-        if accession_number in train_dirs:
-            # append annotations to train list
-            train_dico.append({'image' : image_file, 'label' : label})
-            copy_image_to_folder(accession_number, image_uid, 'train', image_file)
-        
-        # Mapping dataset names to their corresponding sets and annotation lists
-        dataset_map = {
-            "train": (train_dirs, train_dico),
-            "validation": (val_dirs, val_dico),
-            "test": (test_dirs, test_dico),
-        }
+        # Determine dataset split and copy images
         for dataset_name, (dir_set, annotation_list) in dataset_map.items():
             if accession_number in dir_set:
                 annotation_list.append({"image": image_file, "label": label})
