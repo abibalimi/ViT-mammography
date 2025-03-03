@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
-import os
 import json
 import shutil
-import numpy as np
+import random
+from pathlib import Path
 from utils import dict_to_csv
 
 
 # Creating Train / Test folders (One time use)
-ROOT_DIR = 'raw_data/vtb-balanced-patients-202107091800'
-ROOT_JSON = 'raw_data/vtb.balanced-patients.202107091800.json'
-OUT_DIR = 'raw_data/data'
+ROOT_DIR = Path('raw_data/vtb-balanced-patients-202107091800')
+ROOT_JSON = Path('raw_data/vtb.balanced-patients.202107091800.json')
+OUT_DIR = Path('raw_data/data')
 IMAGE_ANNOTATIONS_TRAIN = 'raw_data/train_image_annotations.csv'
 IMAGE_ANNOTATIONS_VAL = 'raw_data/val_image_annotations.csv'
 IMAGE_ANNOTATIONS_TEST = 'raw_data/test_image_annotations.csv'
@@ -22,87 +22,91 @@ def split_train_val_test():
     """
         Splits and copies the (original high-resolution) images to respective train, validation and test folders
         while images from the same patient remain in the same group (i.e in train, validatoin or test folder)
-        and generates a CVS file containing annotations: images and labels ("CC" or "MLO").
+        and generates a Cval_size file containing annotations: images and labels ("CC" or "MLO").
     """
     
     # Make training, validation and test working directories
-    for dirname in ['train', 'validation', 'test']:
-        os.makedirs(os.path.join(OUT_DIR, dirname), exist_ok=True)
+    for split in ['train', 'validation', 'test']:
+        (OUT_DIR / split).mkdir(parents=True, exist_ok=True)
         
         
     # Split patients' directory names into training, validation and test
-    train_DirNames, val_DirNames, test_DirNames = split_directory_names()
+    train_dirs, val_dirs, test_dirs = split_directory_names()
     
     # Split into working datasets
-    # Open JSON file
-    with open(ROOT_JSON) as infile:
+    # Load JSON file
+    with ROOT_JSON.open() as infile:
         data = json.load(infile)
         
-        # list of dictionaries to be converted to CSV to contain annotations
-        train_dico = []
-        val_dico = []
-        test_dico = []
+    # Prepare lists to contain annotations
+    train_dico, val_dico, test_dico = [], [], []
+    
+    for key, details in data.items():
+        accession_number = details['accessionNumber'] # Patient's directory name
+        label = details['view'] 
+        image_uid = details['uid']
         
-        for key in data:
-            accessionNumber = data[key]['accessionNumber'] # Patient's directory name
-            label = data[key]['view'] # Future image label
-            long_image_file = data[key]['uid'] # Future image file name
-            
-            # split uid and get the last string as image file name
-            image_file = long_image_file.split(sep='.')[-1]
-            image_file = '.'.join([image_file,'dcm','png'])
-            
-            
-            # copy train_DirNames images to train folder
-            if accessionNumber in train_DirNames:
-                # append annotations to train list
-                train_dico.append({'image' : image_file, 'label' : label})
-                copy_image_to_folder(accessionNumber, long_image_file, 'train', image_file)
-            
-            # copy val_DirNames images to validation folder
-            if accessionNumber in val_DirNames:
-                val_dico.append({'image' : image_file, 'label' : label})
-                copy_image_to_folder(accessionNumber, long_image_file, 'validation', image_file)
-                
-            # copy val_DirNames images to validation folder
-            if accessionNumber in test_DirNames:
-                test_dico.append({'image' : image_file, 'label' : label})
-                copy_image_to_folder(accessionNumber, long_image_file, 'test', image_file)
+        # Extract the final part of the UID as the image file name
+        image_file = f"{image_uid.split(sep='.')[-1]}.dcm.png"
         
-                
-        # generate annotations in .csv files
-        dict_to_csv(dico=train_dico, headers=['image', 'label'], file_name=IMAGE_ANNOTATIONS_TRAIN) # train 
-        dict_to_csv(dico=val_dico, headers=['image', 'label'], file_name=IMAGE_ANNOTATIONS_VAL) # validation 
-        dict_to_csv(dico=test_dico, headers=['image', 'label'], file_name=IMAGE_ANNOTATIONS_TEST) # test
+        
+        # copy train_DirNames images to train folder
+        if accession_number in train_dirs:
+            # append annotations to train list
+            train_dico.append({'image' : image_file, 'label' : label})
+            copy_image_to_folder(accession_number, image_uid, 'train', image_file)
+        
+        # Mapping dataset names to their corresponding sets and annotation lists
+        dataset_map = {
+            "train": (train_dirs, train_dico),
+            "validation": (val_dirs, val_dico),
+            "test": (test_dirs, test_dico),
+        }
+        for dataset_name, (dir_set, annotation_list) in dataset_map.items():
+            if accession_number in dir_set:
+                annotation_list.append({"image": image_file, "label": label})
+                copy_image_to_folder(accession_number, image_uid, dataset_name, image_file)
+                break  # Exit loop once a match is found
+    
+            
+    # generate annotations in .csv files
+    dict_to_csv(dico=train_dico, headers=['image', 'label'], file_name=IMAGE_ANNOTATIONS_TRAIN) # train 
+    dict_to_csv(dico=val_dico, headers=['image', 'label'], file_name=IMAGE_ANNOTATIONS_VAL) # validation 
+    dict_to_csv(dico=test_dico, headers=['image', 'label'], file_name=IMAGE_ANNOTATIONS_TEST) # test
 
 
 
 def split_directory_names():
     """
-        Train-val-test split of patients' directory names:
-        since the images from the same patient shall remain within the same group (train, validation or test),
-        shuffle the names of the directories, split them (70-15-15), and return them.
+        Split patient directories into train, validation and test sets.
+        Ensures all images from the same patient remain in the same dataset.
     """
-    # Get every patient's directory
-    allPatientDirNames = [f for f in os.listdir(ROOT_DIR) if f.startswith('vtb')] # helps avoid hidden files and directories
+    # Get patient directory names while avoiding hidden files
+    patient_dirs = [d.name for d in ROOT_DIR.iterdir() if d.is_dir() and d.name.startswith("vtb")]
+
+    # Shufffle directories
+    random.shuffle(patient_dirs)
     
-    # Shufffle all the directories
-    np.random.shuffle(allPatientDirNames)
+    # Train-Val-Test Split (70-15-15)
+    train_size = int(TRAIN_SIZE * len(patient_dirs)) # size of train 
+    val_size = (len(patient_dirs) - train_size) // 2 # size of val (and test)
     
-    # Split all the directories
-    ts = int(TRAIN_SIZE * len(allPatientDirNames)) # size of train 
-    vs = (len(allPatientDirNames) - ts) // 2 # size of val (and test)
-    train_DirNames, val_DirNames, test_DirNames = allPatientDirNames[:ts], allPatientDirNames[ts:ts+vs], allPatientDirNames[ts+vs:]
-    
-    return train_DirNames, val_DirNames, test_DirNames
+    return (
+        patient_dirs[:train_size], # train_dirs
+        patient_dirs[train_size : train_size + val_size], # validation_dirs
+        patient_dirs[train_size + val_size:] # test_dirs
+    )
 
 
 
-def copy_image_to_folder(accessionNumber, long_image_file, split_dir, image_file):
-    """Copy image files from patient folder to a specific working dataset (split_dir) folder"""
-    long_image_file = '.'.join([long_image_file, 'dcm', 'png'])
-    shutil.copy(os.path.join(ROOT_DIR,accessionNumber,long_image_file), 
-                                        os.path.join(OUT_DIR,split_dir,image_file))
+def copy_image_to_folder(accession_number, image_uid, dataset_name, image_file):
+    """
+    Copies an image file from the patient's folder to the respective dataset folder.
+    """
+    source_path = ROOT_DIR / accession_number / f"{image_uid}.dcm.png"
+    destination_path = OUT_DIR / dataset_name / image_file
+
+    shutil.copy(source_path, destination_path)
          
          
 if __name__ == "__main__":
