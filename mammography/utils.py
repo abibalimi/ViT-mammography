@@ -2,6 +2,8 @@
 
 import csv
 from typing import List, Dict
+
+
 def dict_to_csv(dico: List[Dict[str, str]], headers: List[str], file_name: str = 'raw_data/annotations.csv'):
     """Writes a list of dictionaries to a CSV file.
 

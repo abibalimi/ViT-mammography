@@ -74,7 +74,7 @@ def split_train_val_test():
 
 def split_directory_names():
     """
-        Split patient directories into train, validation and test sets.
+        Splits patient directories into train, validation and test sets.
         Ensures all images from the same patient remain in the same dataset.
     """
     # Get patient directory names while avoiding hidden files
@@ -94,10 +94,16 @@ def split_directory_names():
     )
 
 
-
-def copy_image_to_folder(accession_number, image_uid, dataset_name, image_file):
+def copy_image_to_folder(accession_number: str, image_uid: str, dataset_name: str, image_file: str):
     """
     Copies an image file from the patient's folder to the respective dataset folder.
+    
+    Args:
+        accession_number (str): The unique identifier for the patient's folder.
+        image_uid (str): The UID of the image to be copied, used to construct the full image path.
+        dataset_name (str): The name of the target dataset folder (e.g., 'train', 'validation', 'test').
+        image_file (str): The name of the image file to be saved in the target dataset folder.
+
     """
     source_path = ROOT_DIR / accession_number / f"{image_uid}.dcm.png"
     destination_path = OUT_DIR / dataset_name / image_file
