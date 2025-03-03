@@ -2,8 +2,7 @@
 
 import os
 import json
-from torch.utils.data import Dataset
-from torch.utils.data import DataLoader
+from torch.utils.data import Dataset, DataLoader
 from torchvision.io import read_image
 
 
