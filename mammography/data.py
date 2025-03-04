@@ -17,6 +17,7 @@ IMAGE_ANNOTATIONS_TEST = IMAGE_DIR / f'test_image_annotations.csv'
 
 class MammogramDataset(Dataset):
     """Retrieves dataset’s features and labels one sample at a time."""
+    
     def __init__(self, image_directory, annotations_file, transform=None, target_transform=None):
         """
         Arguments:
@@ -32,10 +33,12 @@ class MammogramDataset(Dataset):
       
     
     def __len__(self):
+        """Returns the number of samples in the dataset."""
         return len(self.image_labels)
      
     
     def __getitem__(self, index):
+        """loads and returns a sample from the dataset at the given index 'index'."""
         image_path =  Path(self.image_directory / self.image_labels.iloc[index, 0])
         image = read_image(image_path)  # converts that to a tensor
         label = self.image_labels.iloc[index, 1]
@@ -49,8 +52,9 @@ class MammogramDataset(Dataset):
 
 
 def show_images(image_set):
+    """Shows cols * rows mammograms selected randomly from the dataset."""
     figure = plt.figure(figsize=(8, 8))
-    cols, rows = 3, 3
+    cols, rows = 2, 2
     for i in range(1, cols * rows + 1):
         sample_idx = torch.randint(len(image_set), size=(1,)).item()
         img, label = image_set[sample_idx]
