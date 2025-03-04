@@ -1,15 +1,23 @@
 #!/usr/bin/env python3
 
-import os
-import json
+import torch
+from pathlib import Path
 from torch.utils.data import Dataset, DataLoader
 from torchvision.io import read_image
+import matplotlib.pyplot as plt
 
 
-class MammoImageDataset(Dataset):
+
+IMAGE_DIR = Path('raw_data/data')
+IMAGE_ANNOTATIONS_TRAIN = 'raw_data/train_image_annotations.csv'
+IMAGE_ANNOTATIONS_VAL = 'raw_data/val_image_annotations.csv'
+IMAGE_ANNOTATIONS_TEST = 'raw_data/test_image_annotations.csv'
+
+
+class MammogramDataset(Dataset):
     def __init__(self, image_directory, image_labels, transform=None, target_transform=None):
-        self.image_directory = "asbolute_or_relative_image_dir_path_from_json"
-        self.image_labels = "labels_from_json" # check out how to extract labels i.e "view" from json as dico (check old)
+        self.image_directory = image_directory
+        self.image_labels = image_labels
         self.transform = transform  # padding etc, check out within pytorch
         self.target_transform = target_transform
       
@@ -27,6 +35,10 @@ class MammoImageDataset(Dataset):
         if self.target_transform:
             label = self.target_transform(label)
             
+
+def show_images():
+    pass
+
 
 if __name__ == "__main__":
     pass
