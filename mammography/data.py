@@ -66,7 +66,24 @@ def show_images(image_set):
     plt.show()
 
 
+def show_image_and_label(split_dataloader):
+    """Display image and label."""
+    image, labels = next(iter(split_dataloader))
+    print(f"Feature batch shape: {image.size()}")
+    print(f"Labels batch shape: {labels.size()}")
+    img = image[0].squeeze()
+    label = labels[0]
+    plt.imshow(img, cmap="gray")
+    plt.show()
+    print(f"Label: {label}")
+
+
+
 if __name__ == "__main__":
-    training_data = MammogramDataset(image_directory=IMAGE_DIR / f'train', 
-                                     annotations_file=IMAGE_ANNOTATIONS_TRAIN)
-    show_images(training_data)
+    val_data = MammogramDataset(image_directory=IMAGE_DIR / f'validation', 
+                                     annotations_file=IMAGE_ANNOTATIONS_VAL)
+    show_images(val_data)
+    
+    val_dataloader = DataLoader(val_data, batch_size=32, shuffle=True, num_workers=0)
+    show_image_and_label(val_dataloader)
+    
