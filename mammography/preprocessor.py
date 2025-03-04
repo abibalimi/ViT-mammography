@@ -11,9 +11,9 @@ from utils import dict_to_csv
 ROOT_DIR = Path('raw_data/vtb-balanced-patients-202107091800')
 ROOT_JSON = Path('raw_data/vtb.balanced-patients.202107091800.json')
 OUT_DIR = Path('raw_data/data')
-IMAGE_ANNOTATIONS_TRAIN = 'raw_data/train_image_annotations.csv'
-IMAGE_ANNOTATIONS_VAL = 'raw_data/val_image_annotations.csv'
-IMAGE_ANNOTATIONS_TEST = 'raw_data/test_image_annotations.csv'
+IMAGE_ANNOTATIONS_TRAIN = OUT_DIR / f'train_image_annotations.csv'
+IMAGE_ANNOTATIONS_VAL = OUT_DIR / f'val_image_annotations.csv'
+IMAGE_ANNOTATIONS_TEST = OUT_DIR / f'test_image_annotations.csv'
 TRAIN_SIZE = 0.7
     
 
